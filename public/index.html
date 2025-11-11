@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Recipe App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-100 to-pink-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-purple-800 mb-2">🍳 Mood Recipe App</h1>
+            <p class="text-gray-600 text-lg">Find the perfect recipe for your mood</p>
+        </header>
+
+        <!-- Mood Selection -->
+        <div id="mood-selection" class="bg-white rounded-lg shadow-lg p-8 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 text-center">How are you feeling today?</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <button class="mood-btn bg-yellow-200 hover:bg-yellow-300 text-yellow-800 font-semibold py-4 px-6 rounded-lg transition duration-200 transform hover:scale-105" data-mood="happy">
+                    😊 Happy
+                </button>
+                <button class="mood-btn bg-blue-200 hover:bg-blue-300 text-blue-800 font-semibold py-4 px-6 rounded-lg transition duration-200 transform hover:scale-105" data-mood="sad">
+                    😢 Sad
+                </button>
+                <button class="mood-btn bg-red-200 hover:bg-red-300 text-red-800 font-semibold py-4 px-6 rounded-lg transition duration-200 transform hover:scale-105" data-mood="angry">
+                    😠 Angry
+                </button>
+                <button class="mood-btn bg-green-200 hover:bg-green-300 text-green-800 font-semibold py-4 px-6 rounded-lg transition duration-200 transform hover:scale-105" data-mood="energetic">
+                    ⚡ Energetic
+                </button>
+                <button class="mood-btn bg-indigo-200 hover:bg-indigo-300 text-indigo-800 font-semibold py-4 px-6 rounded-lg transition duration-200 transform hover:scale-105" data-mood="stressed">
+                    😰 Stressed
+                </button>
+                <button class="mood-btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-4 px-6 rounded-lg transition duration-200 transform hover:scale-105" data-mood="lazy">
+                    😴 Lazy
+                </button>
+            </div>
+        </div>
+
+        <!-- Recipe Display -->
+        <div id="recipe-display" class="bg-white rounded-lg shadow-lg p-8 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-bold text-purple-800">Your Recipe</h2>
+                <button id="back-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-200">
+                    ← Back to Moods
+                </button>
+            </div>
+
+            <div id="loading" class="text-center py-8 hidden">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-800"></div>
+                <p class="mt-4 text-gray-600">Finding your perfect recipe...</p>
+            </div>
+
+            <div id="recipe-content" class="hidden">
+                <div class="mb-6">
+                    <h3 id="recipe-name" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+                    <p id="recipe-description" class="text-gray-600 text-lg mb-4"></p>
+                    <div class="flex gap-4 text-sm text-gray-500">
+                        <span id="cooking-time" class="flex items-center">
+                            ⏱️ <span class="ml-1"></span>
+                        </span>
+                        <span id="difficulty" class="flex items-center">
+                            📊 <span class="ml-1"></span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-3">Ingredients</h4>
+                    <ul id="ingredients-list" class="list-disc list-inside bg-gray-50 p-4 rounded-lg space-y-2"></ul>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="text-xl font-semibold text-gray-800 mb-3">Instructions</h4>
+                    <ol id="instructions-list" class="list-decimal list-inside bg-gray-50 p-4 rounded-lg space-y-2"></ol>
+                </div>
+
+                <div class="flex gap-4">
+                    <button id="new-recipe-btn" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 transform hover:scale-105">
+                        🎲 Get Another Recipe
+                    </button>
+                </div>
+            </div>
+
+            <div id="error-message" class="hidden text-center py-8">
+                <p class="text-red-600 text-lg">Sorry, we couldn't find a recipe for that mood. Please try another mood.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
+
