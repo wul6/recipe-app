@@ -11,12 +11,22 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+app.use('/uploads', express.static('uploads')); // Serve uploaded images
 
 // Initialize database
 initializeDatabase();
 
+// Import routes
+const recipeBooksRoutes = require('./routes/recipeBooks');
+const recipesRoutes = require('./routes/recipes');
+
+// API Routes
+app.use('/api/recipe-books', recipeBooksRoutes);
+app.use('/api/recipes', recipesRoutes);
+
+// Mood-based recipe routes (legacy feature)
 // Get a random recipe by mood
-app.get('/api/recipes/:mood', (req, res) => {
+app.get('/api/mood-recipes/:mood', (req, res) => {
   const db = new sqlite3.Database('recipes.db');
   const mood = req.params.mood.toLowerCase();
 
@@ -39,7 +49,7 @@ app.get('/api/recipes/:mood', (req, res) => {
 });
 
 // Get another random recipe for the same mood (excluding current recipe ID)
-app.get('/api/recipes/:mood/another', (req, res) => {
+app.get('/api/mood-recipes/:mood/another', (req, res) => {
   const db = new sqlite3.Database('recipes.db');
   const mood = req.params.mood.toLowerCase();
   const excludeId = req.query.exclude;

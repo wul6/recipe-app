@@ -88,7 +88,7 @@ async function getRecipe(mood, excludeId = null) {
     try {
         showRecipeDisplay();
         
-        let url = `/api/recipes/${mood}`;
+        let url = `/api/mood-recipes/${mood}`;
         if (excludeId) {
             url += `/another?exclude=${excludeId}`;
         }

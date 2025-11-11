@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Book Detail - Mood Recipe App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-100 to-pink-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <a href="recipeBooks.html" class="text-purple-600 hover:text-purple-800 font-semibold">← Back to Recipe Books</a>
+                <button id="add-recipe-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                    ➕ Add Recipe
+                </button>
+            </div>
+            <div id="book-header" class="bg-white rounded-lg shadow-lg p-8">
+                <!-- Book info will be inserted here -->
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-12 hidden">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-800"></div>
+            <p class="mt-4 text-gray-600">Loading recipes...</p>
+        </div>
+
+        <!-- Recipes Grid -->
+        <div id="recipes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Recipes will be inserted here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="text-center py-12 hidden">
+            <p class="text-gray-600 text-lg mb-4">No recipes in this book yet. Add your first recipe!</p>
+            <button id="add-first-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                ➕ Add Recipe
+            </button>
+        </div>
+    </div>
+
+    <script src="recipeBookDetail.js"></script>
+</body>
+</html>
+

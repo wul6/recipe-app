@@ -4,11 +4,7 @@ const fs = require('fs');
 const DB_FILE = 'recipes.db';
 
 function initializeDatabase() {
-  // Check if database already exists
-  if (fs.existsSync(DB_FILE)) {
-    console.log('Database already exists');
-    return;
-  }
+  const isNewDatabase = !fs.existsSync(DB_FILE);
 
   const db = new sqlite3.Database(DB_FILE, (err) => {
     if (err) {
@@ -18,8 +14,9 @@ function initializeDatabase() {
     console.log('Connected to SQLite database');
   });
 
-  // Create recipes table
+  // Create tables
   db.serialize(() => {
+    // Old recipes table for mood-based feature (keep for backward compatibility)
     db.run(`CREATE TABLE IF NOT EXISTS recipes (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -31,8 +28,58 @@ function initializeDatabase() {
       difficulty TEXT
     )`);
 
-    // Seed initial recipes
-    const recipes = [
+    // New recipe_books table
+    db.run(`CREATE TABLE IF NOT EXISTS recipe_books (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      cover_image TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME
+    )`);
+
+    // New recipes table (different from mood-based recipes)
+    db.run(`CREATE TABLE IF NOT EXISTS recipe_book_recipes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      recipe_book_id INTEGER NOT NULL REFERENCES recipe_books(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      thumbnail_image TEXT,
+      is_favorite BOOLEAN DEFAULT FALSE,
+      tags TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME
+    )`);
+
+    // Ingredients table
+    db.run(`CREATE TABLE IF NOT EXISTS ingredients (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      recipe_id INTEGER NOT NULL REFERENCES recipe_book_recipes(id) ON DELETE CASCADE,
+      quantity TEXT,
+      unit TEXT,
+      ingredient_name TEXT NOT NULL
+    )`);
+
+    // Instructions table
+    db.run(`CREATE TABLE IF NOT EXISTS instructions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      recipe_id INTEGER NOT NULL REFERENCES recipe_book_recipes(id) ON DELETE CASCADE,
+      step_number INTEGER NOT NULL,
+      description TEXT NOT NULL,
+      image TEXT,
+      icon TEXT
+    )`);
+
+    // Enable foreign keys
+    db.run('PRAGMA foreign_keys = ON');
+
+    // Only seed mood-based recipes if this is a new database
+    if (isNewDatabase) {
+      seedMoodRecipes(db);
+    }
+  });
+}
+
+function seedMoodRecipes(db) {
+  const recipes = [
       {
         name: 'Chocolate Chip Cookies',
         mood: 'happy',
@@ -216,11 +263,9 @@ function initializeDatabase() {
       if (err) {
         console.error('Error seeding database:', err.message);
       } else {
-        console.log('Database seeded with initial recipes');
+        console.log('Database seeded with initial mood-based recipes');
       }
-      db.close();
     });
-  });
 }
 
 module.exports = { initializeDatabase };
