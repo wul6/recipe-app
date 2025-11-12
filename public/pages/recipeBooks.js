@@ -69,6 +69,7 @@ function createBookCard(book) {
     card.innerHTML = `
         <div class="relative h-48 bg-gray-200">
             <img src="${coverImage}" alt="${book.title}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/400x300?text=No+Cover'">
+            <button data-delete="${book.id}" class="absolute top-2 right-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-semibold px-2 py-1 rounded-md" title="Delete book">🗑️</button>
         </div>
         <div class="p-6">
             <h3 class="text-xl font-bold text-gray-800 mb-2">${book.title}</h3>
@@ -76,6 +77,25 @@ function createBookCard(book) {
             <p class="text-sm text-gray-500 mt-2">Created: ${new Date(book.created_at).toLocaleDateString()}</p>
         </div>
     `;
+
+    // Delete button handler (stop card navigation)
+    const delBtn = card.querySelector('[data-delete]');
+    delBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const id = delBtn.getAttribute('data-delete');
+        if (!confirm('Delete this recipe book and all its recipes?')) return;
+        try {
+            const res = await fetch(`/api/recipe-books/${id}`, { method: 'DELETE' });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || 'Failed to delete');
+            }
+            loadRecipeBooks();
+        } catch (err) {
+            console.error(err);
+            alert('Error deleting book: ' + err.message);
+        }
+    });
     
     return card;
 }
