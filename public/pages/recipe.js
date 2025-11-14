@@ -73,6 +73,37 @@ async function loadRecipe() {
 function renderRecipe(recipe) {
 	document.getElementById('recipe-title').textContent = recipe.title;
 
+	// Thumbnail image with upload
+	const thumbnailContainer = document.getElementById('recipe-thumbnail-container');
+	const thumbnailImage = recipe.thumbnail_image;
+	thumbnailContainer.innerHTML = `
+		<div class="relative group max-w-md">
+			<img id="recipe-thumbnail-image" src="${thumbnailImage}" alt="${recipe.title}" 
+				class="w-full h-64 object-cover rounded-lg shadow-md" 
+				onerror="this.src='/images/default-recipe-1.png'">
+			<div id="recipe-thumbnail-overlay" class="hidden group-hover:flex absolute inset-0 bg-black/50 text-white items-center justify-center rounded-lg cursor-pointer transition">
+				<div class="text-center">
+					<div class="text-2xl mb-2">📷</div>
+					<div class="text-sm font-semibold">Click to Upload</div>
+				</div>
+			</div>
+			<input type="file" id="recipe-thumbnail-input" accept="image/*" class="hidden">
+		</div>
+	`;
+	
+	// Wire up thumbnail upload
+	setupRecipeThumbnailUpload();
+	
+	// Description
+	const description = document.getElementById('description');
+	description.classList.add('hidden');
+	if (recipe.description && recipe.description.trim() !== '') {
+		description.innerHTML = `
+			<h3 class="text-xl mb-2">${recipe.description}</h3>
+		`;
+		description.classList.remove('hidden');
+	}
+
 	// Ingredients
 	const ingredients = document.getElementById('ingredients');
 	ingredients.innerHTML = `
@@ -119,11 +150,16 @@ function openLightbox() {
 	container.innerHTML = '';
 	if (!currentRecipe) return;
 
-	// Title (not inline per-spec, but useful)
+	// Title (todo: make into inline edit)
 	container.appendChild(sectionTitle('Title'));
 	const titleInput = inlineEditableText('recipe-title-input', currentRecipe.title);
 	container.appendChild(titleInput);
 	
+	// Description
+	container.appendChild(sectionTitle('Description'));
+	const descriptionInput = inlineTextarea('recipe-description-input', currentRecipe.description || '', 'Description');
+	container.appendChild(descriptionInput);
+
 	// Auto-focus title input
 	setTimeout(() => {
 		const input = document.getElementById('recipe-title-input');
@@ -235,6 +271,10 @@ async function saveEdits() {
 		return;
 	}
 
+	// Gather description
+	const descriptionInput = document.getElementById('recipe-description-input');
+	const newDescription = descriptionInput ? descriptionInput.value.trim() : currentRecipe.description;
+
 	// Gather ingredients
 	const newIngredients = [];
 	(currentRecipe.ingredients || []).forEach((_, idx) => {
@@ -284,6 +324,7 @@ async function saveEdits() {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
 				title: newTitle,
+				description: newDescription,
 				ingredients: newIngredients,
 				instructions: newInstructions
 			})
@@ -302,6 +343,86 @@ async function saveEdits() {
 		saveBtn.disabled = false;
 		saveBtn.textContent = originalText;
 		saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+	}
+}
+
+function setupRecipeThumbnailUpload() {
+	const overlay = document.getElementById('recipe-thumbnail-overlay');
+	const input = document.getElementById('recipe-thumbnail-input');
+	const image = document.getElementById('recipe-thumbnail-image');
+	
+	if (!overlay || !input || !image) return;
+	
+	// Click to upload
+	overlay.addEventListener('click', () => input.click());
+	
+	// Drag and drop
+	const container = overlay.parentElement;
+	container.addEventListener('dragover', (e) => {
+		e.preventDefault();
+		container.classList.add('border-2', 'border-dashed', 'border-purple-400', 'bg-purple-50');
+	});
+	
+	container.addEventListener('dragleave', (e) => {
+		e.preventDefault();
+		container.classList.remove('border-2', 'border-dashed', 'border-purple-400', 'bg-purple-50');
+	});
+	
+	container.addEventListener('drop', (e) => {
+		e.preventDefault();
+		container.classList.remove('border-2', 'border-dashed', 'border-purple-400', 'bg-purple-50');
+		
+		const files = e.dataTransfer.files;
+		if (files.length > 0 && files[0].type.startsWith('image/')) {
+			handleThumbnailUpload(files[0]);
+		}
+	});
+	
+	input.addEventListener('change', (e) => {
+		if (e.target.files && e.target.files[0]) {
+			handleThumbnailUpload(e.target.files[0]);
+		}
+	});
+	
+	async function handleThumbnailUpload(file) {
+		// Preview before upload
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			image.src = e.target.result;
+		};
+		reader.readAsDataURL(file);
+		
+		// Upload to server
+		const formData = new FormData();
+		formData.append('thumbnail_image', file);
+		
+		try {
+			const res = await fetch(`/api/recipes/${recipeId}`, {
+				method: 'PUT',
+				body: formData
+			});
+			
+			if (!res.ok) {
+				const e = await res.json().catch(() => ({}));
+				throw new Error(e.error || 'Failed to upload image');
+			}
+			
+			const data = await res.json();
+			if (data.thumbnail_image) {
+				image.src = data.thumbnail_image;
+			} else if (data.thumbnail_image === undefined && currentRecipe) {
+				// Update current recipe object
+				currentRecipe.thumbnail_image = `/uploads/recipes/${file.name}`;
+			}
+			showToast('✅ Recipe image updated successfully!', 'success');
+		} catch (e) {
+			console.error(e);
+			showToast('Error uploading image: ' + e.message, 'error');
+			// Revert to original image on error
+			if (currentRecipe) {
+				image.src = currentRecipe.thumbnail_image;
+			}
+		}
 	}
 }
 

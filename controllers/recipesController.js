@@ -1,6 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-
 const DB_FILE = 'recipes.db';
 
 // Helper to get database connection
@@ -85,7 +84,7 @@ function getRecipeById(req, res) {
 // Create a new recipe
 function createRecipe(req, res) {
   const db = getDb();
-  const { recipe_book_id, title, ingredients, instructions, is_favorite, tags } = req.body;
+  const { recipe_book_id, title, description, ingredients, instructions, is_favorite, tags } = req.body;
   const thumbnailImage = req.file ? `/uploads/recipes/${req.file.filename}` : null;
 
   if (!recipe_book_id || !title) {
@@ -110,8 +109,8 @@ function createRecipe(req, res) {
   db.serialize(() => {
     // Insert recipe
     db.run(
-      'INSERT INTO recipe_book_recipes (recipe_book_id, title, thumbnail_image, is_favorite, tags, updated_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
-      [recipe_book_id, title, thumbnailImage, is_favorite || false, tags || null],
+      'INSERT INTO recipe_book_recipes (recipe_book_id, title, description, thumbnail_image, is_favorite, tags, updated_at) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
+      [recipe_book_id, title, description, thumbnailImage, is_favorite || false, tags || null],
       function(err) {
         if (err) {
           res.status(500).json({ error: err.message });
@@ -200,7 +199,7 @@ function createRecipe(req, res) {
 function updateRecipe(req, res) {
   const db = getDb();
   const recipeId = req.params.id;
-  const { title, ingredients, instructions, is_favorite, tags } = req.body;
+  const { title, ingredients, description, instructions, is_favorite, tags } = req.body;
   const thumbnailImage = req.file ? `/uploads/recipes/${req.file.filename}` : null;
 
   // First get the existing recipe
@@ -218,6 +217,7 @@ function updateRecipe(req, res) {
     }
 
     const newTitle = title || recipe.title;
+    const newDescription = description;
     const newThumbnail = thumbnailImage || recipe.thumbnail_image;
     const newIsFavorite = is_favorite !== undefined ? is_favorite : recipe.is_favorite;
     const newTags = tags !== undefined ? tags : recipe.tags;
@@ -225,8 +225,8 @@ function updateRecipe(req, res) {
     db.serialize(() => {
       // Update recipe
       db.run(
-        'UPDATE recipe_book_recipes SET title = ?, thumbnail_image = ?, is_favorite = ?, tags = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-        [newTitle, newThumbnail, newIsFavorite, newTags, recipeId],
+        'UPDATE recipe_book_recipes SET title = ?, description = ?, thumbnail_image = ?, is_favorite = ?, tags = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [newTitle, newDescription, newThumbnail, newIsFavorite, newTags, recipeId],
         (err) => {
           if (err) {
             res.status(500).json({ error: err.message });

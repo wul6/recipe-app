@@ -12,6 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/uploads', express.static('uploads')); // Serve uploaded images
+app.use('/images', express.static('public/images')); 
 
 // Initialize database
 initializeDatabase();

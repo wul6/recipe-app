@@ -42,6 +42,7 @@ function initializeDatabase() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       recipe_book_id INTEGER NOT NULL REFERENCES recipe_books(id) ON DELETE CASCADE,
       title TEXT NOT NULL,
+      description TEXT,
       thumbnail_image TEXT,
       is_favorite BOOLEAN DEFAULT FALSE,
       tags TEXT,
